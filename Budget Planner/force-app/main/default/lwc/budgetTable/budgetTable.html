@@ -1,0 +1,260 @@
+<template>
+    <lightning-card title="Budget Table" icon-name="utility:table">
+        <template if:true={isLoading}>
+            <div class="slds-m-around_medium">
+                <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+            </div>
+        </template>
+        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+            <thead>
+                <tr class="slds-line-height_reset">
+                    <th class="slds-text-title_caps" scope="col">Allotted Budget</th>
+                    <th class="slds-text-title_caps" scope="col">Budget Spent</th>
+                    <th class="slds-text-title_caps" scope="col">Balance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="slds-text-title">{totalBudget}</td>
+                    <td class="slds-text-title">{budgetSpent}</td>
+                    <td class="slds-text-title">{availableBudget}</td>
+                </tr>
+            </tbody>
+        </table>
+        <template if:false={isLoading}>
+            <div class="slds-m-top_medium">
+                <div class="slds-float_right">
+                    <lightning-button
+                        icon-name="utility:add"
+                        label="Add Budget Category"
+                        
+                        title="Add Budget Category"
+                        onclick={addCategory}
+                       
+                    ></lightning-button>
+                </div>
+            </div>
+            
+         <template if:true={showModal}>
+                <div class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <div class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium">Add Budget Category</h2>
+                        </div>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="categoryName">Category Name</label>
+                                <div class="slds-form-element__control">
+                                    <input type="text" id="categoryName" name="name" value={name} onchange={handleInputChange} class="slds-input" />
+                                </div>
+                            </div>
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="cost">Cost</label>
+                                <div class="slds-form-element__control">
+                                    <input type="number" id="cost" name="cost" value={cost} onchange={handleInputChange} class="slds-input" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-modal__footer">
+                            <lightning-button label="Cancel" variant="neutral" onclick={closeModal}></lightning-button>
+                            <lightning-button label="Save"  onclick={saveBudget}></lightning-button>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+            <template if:true={showAddExpenseForm}>
+                <div class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <div class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium">Add Expense for {selectedCategoryName}</h2>
+                        </div>
+                        <div class="slds-modal__content slds-p-around_medium">
+                        <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="expenseResourceName">Resource Name</label>
+                                <div class="slds-form-element__control">
+                                    <input type="text" id="expenseResourceName" name="expenseResourceName" value={expenseResourceName} onchange={handleExpenseInputChange} class="slds-input" />
+                                </div>
+                            </div>
+                            <div class="slds-form-element">
+                                <label class="slds-form-element__label" for="expenseCost">Cost</label>
+                                <div class="slds-form-element__control">
+                                    <input type="number" id="expenseCost" name="expenseCost" value={expenseCost} onchange={handleExpenseInputChange} class="slds-input" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="slds-modal__footer">
+                            <lightning-button label="Cancel" variant="neutral" onclick={cancelAddExpense}></lightning-button>
+                            <lightning-button label="Save"  onclick={saveExpense}></lightning-button>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+           <template if:true={showEditModal}>
+                <div class="slds-modal slds-fade-in-open">
+                    <div class="slds-modal__container">
+                        <div class="slds-modal__header">
+                            <h2 class="slds-text-heading_medium">Edit Category</h2>
+                        </div>
+                        <div class="slds-modal__content slds-p-around_medium">
+                            <lightning-input label="Name" name="name" value={name} onchange={handleInputChange}></lightning-input>
+                            <lightning-input label="Cost" name="cost" value={cost} onchange={handleInputChange}></lightning-input>
+                        </div>
+                        <div class="slds-modal__footer">
+                            <lightning-button label="Cancel" variant="neutral" onclick={closeModal}></lightning-button>
+                            <lightning-button label="Save" onclick={updateBudgetCategory}></lightning-button>
+                        </div>
+                    </div>
+                </div>
+                <div class="slds-backdrop slds-backdrop_open"></div>
+            </template>
+            <template if:true={records}>
+                <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered">
+                    <thead>
+                        <tr class="slds-text-title_caps">
+                            <th scope="col">Delete</th>
+                            <th scope="col">Category Name</th>
+                            <th scope="col">Cost</th>
+                            <th scope="col">Edit</th>
+                            <th scope="col">Show Expenses</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={records} for:item="record" for:index="index">
+                            <tr key={record.Id}>
+                                <td>
+                                    <lightning-button-icon
+                                        data-id={record.Id}
+                                        data-index={index}
+                                        icon-name="utility:delete"
+                                        alternative-text="Delete"
+                                        onclick={deleteBudgetCategory}
+                                        class="slds-button_icon slds-button_icon-error"
+                                        variant="border-filled"
+                                    ></lightning-button-icon>
+                                </td>
+                                <td data-label="Category Name">
+                                    <div class="slds-truncate" title={record.Name}>{record.Name}</div>
+                                </td>
+                                <td data-label="Cost">
+                                    <div class="slds-truncate" title={record.Cost__c}>{record.Cost__c}</div>
+                                </td>
+                                <td>
+                                    <lightning-button-icon
+                                        data-id={record.Id}
+                                        data-index={index}
+                                        icon-name="utility:edit"
+                                        alternative-text="Edit"
+                                        onclick={editBudgetCategory}
+                                        class="slds-button_icon slds-button_icon-brand"
+                                        variant="border-filled"
+                                    ></lightning-button-icon>
+                                </td>
+                                <td>
+                                    <lightning-button
+                                        data-id={record.Id}
+                                        data-index={index}
+                                        label={showButtonLabel} 
+                                        title="Show"
+                                        onclick={handleShowCategoryRecords}
+                                    ></lightning-button>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+                <div class="slds-m-top_medium">
+               
+                    <lightning-button  label="Save" onclick={handleSaveAction} ></lightning-button>
+                </div>
+            </template>
+          
+
+            
+            
+        </template>
+       
+        
+    <template if:true={showEditExpenseModal}>
+    <div class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <header class="slds-modal__header">
+                <h2 class="slds-text-heading_medium">Edit Expense</h2>
+            </header>
+    <div class="slds-modal__content slds-p-around_medium">
+                 <lightning-input label="Resource Name"   name="expenseResourceName" value={expenseResourceName} onchange={handleExpenseInputChange}></lightning-input>
+                <lightning-input label="Cost" type="number" name = "expenseCost" value={expenseCost} onchange={handleExpenseInputChange}></lightning-input>
+            </div>
+   <footer class="slds-modal__footer">
+                <lightning-button label="Cancel" onclick={closeEditExpenseModal}></lightning-button>
+                <lightning-button label="Save"  onclick={updateBudgetCategoryExpense}></lightning-button>
+            </footer>
+        </div>
+    </div>
+    <div class="slds-backdrop slds-backdrop_open"></div>
+</template>
+ <template if:true={showCategoryRecords}>
+            <div class="slds-media slds-media_center slds-has-flexi-truncate expense-header" >
+                <h2 style="font-size: 20px">Expenses For {selectedCategoryNameForExpenses} Category</h2>
+            </div>
+            <div class="slds-float_right">
+                <lightning-button
+                    icon-name="utility:add"
+                    label="Add Budget Expense"
+                    title="Add Budget Expense"
+                    onclick={addExpenseForCategory}
+                    
+                ></lightning-button>
+            </div>
+            <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <th scope="col">Delete</th>
+                        <th scope="col">Resource Name</th>
+                        <th scope="col">Cost</th>
+                        <th scope="col">Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={categoryExpenses} for:item="expense" for:index="index">
+                        <tr key={expense.Id}>
+                            <td>
+                                <lightning-button-icon
+                                    data-id={expense.Id}
+                                    data-index={index}
+                                    icon-name="utility:delete"
+                                    alternative-text="Delete"
+                                    onclick={deleteExpense}
+                                    class="slds-button_icon slds-button_icon-error"
+                                    variant="border-filled"
+                                ></lightning-button-icon>
+                            </td>
+                            <td data-label="Resource Name">
+                                <div class="slds-truncate" title={expense.Resource_Name__c}>{expense.Resource_Name__c}</div>
+                            </td>
+                            <td data-label="Cost">
+                                <div class="slds-truncate" title={expense.Cost__c}>{expense.Cost__c}</div>
+                            </td>
+                            <td>
+                                <lightning-button-icon
+                                    data-id={expense.Id}
+                                    data-index={index}
+                                    icon-name="utility:edit"
+                                    alternative-text="Edit"
+                                    onclick={editExpense}
+                                    class="slds-button_icon slds-button_icon-brand"
+                                    variant="border-filled"
+                                ></lightning-button-icon>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+            <div class="slds-m-top_medium">
+                <lightning-button label="Close Expense" onclick={closeExpenseTable}></lightning-button>
+            </div>
+          
+        </template>
+</lightning-card>
+</template>

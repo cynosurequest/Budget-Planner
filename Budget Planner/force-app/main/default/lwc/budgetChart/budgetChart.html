@@ -1,0 +1,32 @@
+<template>
+    <lightning-card title="Budget Charts" icon-name = "utility:chart">
+      <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" padding="around-small">
+         
+          <lightning-combobox
+            label="Chart Type"
+            
+            value={selectedChartType}
+            options={chartTypeOptions}
+            onchange={handleChartTypeChange}
+          ></lightning-combobox>
+          <lightning-combobox
+            label="Budget Duration"
+            value={selectedBudgetDuration}
+            options={budgetDurationOptions}
+            onchange={handleChangeBudgetDuration}
+          ></lightning-combobox>
+        </lightning-layout-item>
+        <lightning-layout-item size="12" padding="around-small">
+          <div class="chart-container">
+            <canvas lwc:dom="manual"></canvas>
+          </div>
+        </lightning-layout-item>
+        <lightning-layout-item size="12" padding="around-small">
+          <div class="chart-container">
+            <canvas class="summary-chart" lwc:dom="manual"></canvas>
+          </div>
+        </lightning-layout-item>
+      </lightning-layout>
+    </lightning-card>
+  </template>
